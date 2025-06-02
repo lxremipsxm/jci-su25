@@ -13,7 +13,7 @@ PROGRAMMER = arduino
 
 
 #-----Relevant files-----
-SOURCEFILE = main.c #main .c file + libraries .c files
+SOURCEFILE = blinky.c lib/uart.c #main .c file + libraries .c files
 
 
 #-----Recipes-----
