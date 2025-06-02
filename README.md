@@ -23,11 +23,11 @@ In order to scale this design up, an additional cam must be placed under each ne
 
 #### Onshape
 
-This is my first time using Onshape. I spent about a day learning Onshape and how to create models accurate to scale. I then set out to create the models by sketching designs on faces and extruding them as necessary. Throughout the process, the design remained unchanged, but I made one significant revision: making the range of motion of the cams a little larger and moving the readers further away from the cards in order to prevent interference/reading multiple cards accidentally.
+This is my first time using Onshape. I spent about a day learning Onshape and how to create models accurate to scale. I then set out to create the models by sketching designs on faces and extruding them as necessary. Throughout the process, the design remained unchanged, but I made one significant revision: making the range of motion of the cams a little larger and moving the readers further away from the cards in order to prevent interference/reading multiple cards accidentally. I've also tried to use mates in my model. Revolute_1 and Revolute_2 are fully functional and can be animated, but I don't have a way to test a whole workflow using Onshape.
 
 
 #### Print
 
-I've sent the .stl files to be printed by robu.in, which I will receive within a week's time. The print files are saved as "Assembly2.stl" and "Assembly2_verX.stl" in the 3D/ directory, and the final product will look like the contents of "Prototype_Assembly.stl". Find the Onshape document [here](https://cad.onshape.com/documents/6fe5cb060711fa738a919116/w/fa28f828e5c3d9cb04d2cd20/e/b66991c36ce5bdb22e432e13?renderMode=0&uiState=683d6334979e864c1bc73d1c).
+I've sent the .stl files to be printed by [robu.in](https://robu.in/product/3d-printing-service/), which I will receive within a week's time (~6/9/25). The print file is saved as "Assembly2_ver3.stl" in the 3D/ directory, and the final product will look like the contents of "Prototype_Assembly.stl". Find the Onshape document [here](https://cad.onshape.com/documents/6fe5cb060711fa738a919116/w/fa28f828e5c3d9cb04d2cd20/e/b66991c36ce5bdb22e432e13?renderMode=0&uiState=683d6334979e864c1bc73d1c). 
 
 ---
