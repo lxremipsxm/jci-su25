@@ -1,5 +1,5 @@
 /*Siddharth Vasudevan
-jci-su25/Component_tests/blinky.c
+Component_tests/blinky.c
 
 Intended for checking integrity of current arduino board
 

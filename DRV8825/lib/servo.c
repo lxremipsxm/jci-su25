@@ -7,6 +7,7 @@ Comments
 --------
 6/3/25: Created file from Component_tests/blinky.c
 6/4/25: I will need to make this library extensible, since I want it to be easy to use
+6/12/25: modified some comments
 */
 
 #include "servo.h"
@@ -24,11 +25,11 @@ void servo_start_pwm(){ //Sets up pwm servo control on PB1
     TCCR1B |= (1<<WGM12);
     TCCR1A |= (1<<WGM11);
 
-    TCCR1B |= (1<<CS11); //set prescaler to /8
+    TCCR1B |= (1<<CS11); //set prescaler to /8, enable timer
 
 
     ICR1 = 39999; //0 to 40000 with our clock is 50Hz
-    OCR1A = 3999; //4000, 10% duty cycle, 0 degrees
+    OCR1A = 1000; //set servo to 0 degrees initially
 
     //Overall, this produces a pwm where the output goes HIGH at 0, goes low at 3999, and resets at 39999, to give us a 50Hz square wave 
     //with 10% duty cycle
@@ -40,7 +41,7 @@ void servo_set_pos(int deg){
     //Its range is 1000 us to 5000 us. If outside this range, the servo will not move.
     
     double pwidth = ((deg/180.0) * 2000.0) + 500.0; //maps pwidth to 0 to 180 degrees
-    pwidth = (int)pwidth;
+    pwidth = (int)pwidth; //cast to int
 
     if (pwidth > 2500){
         pwidth = 2500;
