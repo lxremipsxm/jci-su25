@@ -80,9 +80,17 @@ drv8825_scr_t scr =
 //-----Main method-----//
 int main(void)
 {
-    dvr8825_init(&drv, scr);
+    drv8825_init(&drv, scr);
+    uart_send_string("Stepper driver initialized.")
+    uart_init();
 
     while(1){
+        drv8825_move_steps(200, DRV8825_DIR_FORWARD);
+
+        stepper_delay_us(5000);
+
+        drv8825_move_steps(200, DRV8825_DIR_BACKWARD);
+        
         
     }
 

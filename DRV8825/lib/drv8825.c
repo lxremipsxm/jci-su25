@@ -17,6 +17,7 @@ Modified by Siddharth Vasudevan
 Comments
 --------
 6/12/25: Removed all misspellings of drv8825 in function and type names
+6/17/25: Adding comments to the header file.
 */
 
 #include <stdint.h>
