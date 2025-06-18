@@ -15,7 +15,7 @@ PROGRAMMER = arduino
 
 
 #-----Relevant files-----
-SOURCEFILE = main.c lib/uart.c lib/drv8825.c#main .c file + libraries .c files
+SOURCEFILE = main.c lib/uart.c lib/drv8825.c #main .c file + libraries .c files
 
 
 #-----Recipes-----
@@ -27,7 +27,7 @@ main.hex: main.elf #copies files into .elf and .hex formats
 	avr-size --format=avr --mcu=atmega328p main.elf 
 
 main.elf: $(SOURCEFILE) 
-	avr-gcc -Wall -Os -DF_CPU=$(CLOCKSPEED) -mmcu=atmega328p -o main.elf $(SOURCEFILE)
+	avr-gcc -std=c99 -Wall -Os -DF_CPU=$(CLOCKSPEED) -mmcu=atmega328p -o main.elf $(SOURCEFILE)
 
 flash:	begin #flash to ATMega
 	avrdude -c $(PROGRAMMER) -b 115200 -P $(SERIALPORT) -p atmega328p -U flash:w:main.hex:i
