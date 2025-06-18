@@ -5,6 +5,7 @@
 #Comments
 #--------
 #6/12/25: Modified filename, will include library for DRV8825.
+#6/17/25: DRV8825 included. 
 
 
 #-----Constants-----
@@ -14,7 +15,7 @@ PROGRAMMER = arduino
 
 
 #-----Relevant files-----
-SOURCEFILE = main.c lib/uart.c #main .c file + libraries .c files
+SOURCEFILE = main.c lib/uart.c lib/drv8825.c#main .c file + libraries .c files
 
 
 #-----Recipes-----
