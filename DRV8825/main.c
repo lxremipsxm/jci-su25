@@ -1,7 +1,7 @@
 /*Siddharth Vasudevan
 DRV8825/main.c
 
-Intended for checking integrity of current arduino board
+Testing DRV8825
 
 Comments
 --------
@@ -42,7 +42,7 @@ static void stepper_pin_set(drv8825_drv_pins_t pin, bool state)
     //I will be using PD0-PD7 to control the stepper motor, so 
     //I can just map the pins directly to their own number.
 
-    if (DDRD & (1<<pin) == 0){
+    if ((DDRD & (1<<pin)) == 0){
         DDRD |= (1<<pin);
     }
 
@@ -81,15 +81,14 @@ drv8825_scr_t scr =
 int main(void)
 {
     drv8825_init(&drv, scr);
-    uart_send_string("Stepper driver initialized.")
+    uart_send_string("Stepper driver initialized.");
     uart_init();
 
     while(1){
         drv8825_move_steps(200, DRV8825_DIR_FORWARD);
+        uart_send_string("Forward");
 
-        stepper_delay_us(5000);
-
-        drv8825_move_steps(200, DRV8825_DIR_BACKWARD);
+        stepper_delay_us(1000000);
         
         
     }

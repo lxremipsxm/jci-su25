@@ -4,7 +4,7 @@ lib/uart.h
 Header file for uart.c
 
 Comments:
-6/2/25: Created file 
+6/30/25: copied file over 
 */
 
 #ifndef UART_H

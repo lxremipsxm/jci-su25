@@ -4,7 +4,6 @@
 
 #Comments
 #--------
-# 6/17/25: Modified to include drv8825 library
 
 
 #-----Constants-----
@@ -14,7 +13,7 @@ PROGRAMMER = arduino
 
 
 #-----Relevant files-----
-SOURCEFILE = main.c lib/uart.c lib/drv8825.c #main .c file + libraries .c files
+SOURCEFILE = blinky.c lib/uart.c lib/servo.c #main .c file + libraries .c files
 
 
 #-----Recipes-----

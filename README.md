@@ -40,16 +40,16 @@ I've sent the `.stl` files to be printed by [Robu.in's 3D printing service](http
 
 ## Component Testing 
 
-Component List (tentative): Arduino UNO(1), Tower Pro 9g Micro Servos(4), NEMA 17 Stepper motor(1), DRV8825 stepper motor driver(1), 2N7000 N-MOSFETs(4)
+Component List (tentative): Arduino UNO(1), Tower Pro 9g Micro Servos(4), NEMA 17 Stepper motor(1), DRV8825 stepper motor driver(1), 2N7000 N-MOSFETs(4), LM2965S buck converter(1)
 
 
 ### Makefile (6/2)
 
-Since I'm using a more baremetal approach with this project, I'm skipping the Arduino IDE and managing functionality by editing register contents in the ATmega328p IC on-board. Additionally, I'll be using the `avr-gcc` toolchain to compile and flash my code onto the ATmega. For this, I've written a makefile that is heavily inspired by the makefiles I've had to use in college for my embedded systems course. Find the references [here](). <- Insert link to 231 repo
+Since I'm using a more baremetal approach with this project, I'm skipping the Arduino IDE and managing functionality by editing register contents in the ATmega328p IC on-board. Additionally, I'll be using the `avr-gcc` toolchain to compile and flash my code onto the ATmega. For this, I've written a makefile that is heavily inspired by the makefiles I've had to use in college for my embedded systems course. Find the references [here](https://github.com/ProfMcL/ECE231).
 
 ### Servos 
 
-I couldn't find any C libraries for the micro servos, unfortunately. However, I managed to create my own simple servo library that functions exactly the same. I've used a general purpose timer on the ATmega, 16-bit Timer 2, to generate a constant Fast PWM signal with a period of 20ms, which is required by the servo according to documentation, and a duty cycle that varies between 1ms and 2ms. The duty cycle of this PWM wave determines the angle the servo turns to. My function is constructed in such a way that it takes an input from 0 to 180 degrees, maps it to milliseconds, and adjusts the duty cycle by changing the value the timer waits till before it sets the PWM to `LOW` again.
+I couldn't find any C libraries for the micro servos, unfortunately. However, I managed to create my own simple servo library that functions exactly the same. I've used a general purpose timer on the ATmega, 16-bit Timer 2, to generate a constant Fast PWM signal with a period of 20ms, which is required by the servo according to documentation, and a duty cycle that varies between 5% and 10%. The duty cycle of this PWM wave determines the angle the servo turns to. My function is constructed in such a way that it takes an input from 0 to 180 degrees, maps it to milliseconds, and adjusts the duty cycle by changing the value the timer waits till before it sets the PWM to `LOW` again.
 
 The next step is to create a way to control four servos with the same timer. This is possible, but it requires some tweaking of my library to include taking a servo number as input, as well as NMOSFETs in the circuit to redirect the PWM signal to these servos as required. I will also need to tweak *when* the signal is `HIGH` depending on the servo that is being addressed.
 
@@ -98,6 +98,41 @@ I would like the final design to be convenient to use. A single power supply wou
 
 
 I will also use this supply to power the four servos, as they each can spike at 700mA+ under load, potentially causing errors in logic if all of them are powered by the UNO. Additionally, I will include a 470-1000uF capacitor to smooth out current.
+
+
+### Servo Library
+
+I need to modify my `servo_set_pos()` method to take another parameter, and use a simple switch-case block to modify the correct output compare register (OCRxA/OCRxB) based on which servo needs to be modified. I'm reusing the mapping from degrees to milliseconds from the previous implementation of this method. 
+
+I've decided this is how I will connect my servos:
+
+Servo 1: OC1A - PB1 (Arduino D9)
+Servo 2: OC1B - PB2 (Arduino D10)
+Servo 3: OC2A - PB3 (Arduino D11)
+Servo 4: OC2B - PD3 (Arduino D3)
+
+
+Additionally, I need to set up Timer1 and Timer2 to behave similarly. I will put both in Fast PWM mode with TOP = ICRx, and set TOP to 255. In other words, this makes the timer count to 255 before resetting/triggering an interrupt. I'll set both to 255, since the 8-bit timer can only count to 255 (even though the 16-bit timer can count to 65535). I then need to prescale both of them identically, such that after 255 counts, approximately 20ms have elapsed. 
+
+Math:
+
+$\frac{255}{(20*10^{-3})} = 12750$ counts/second
+
+Original clock speed = 16MHz
+
+$\therefore \frac{16000000}{12750} = 1254$
+
+The maximum prescaler value on the timers on the ATmega328p is 1024. If we use 1024 as the prescaler for the timer clock, it results in a period of 16.4ms. This will not work; instead, I'll use an Arduino Mega, with a ATmega2560, and use one of its four timers. 
+
+
+### Adaptation for ATmega2560
+
+Since I am moving everything to an ATmega2560 for the additional timers, I have several things to update: the makefile, the DRV8825 `stepper_pin_set()` function, and the custom servo library. I will make these changes in a directory labeled `Final_Build/`, where I will store all the code that is fully functional and ready to go.
+
+I will use the following pins: 
+
+
+
 
 ---
 

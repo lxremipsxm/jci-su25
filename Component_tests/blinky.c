@@ -61,16 +61,16 @@ int main(void){
     
     }*/
 
-    /*Testing servos
-    servo_pwm_init();
+    /*Testing servos*/
+    servo_start_pwm();
 
     while(1){
         servo_set_pos(0);
         _delay_ms(1000);
-        servo_set_pos(180);
+        servo_set_pos(90);
         _delay_ms(1000);
     }
 
-    */
+    
     return 0;
 }

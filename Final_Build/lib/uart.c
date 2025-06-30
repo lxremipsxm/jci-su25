@@ -1,10 +1,11 @@
 /*Siddharth Vasudevan
 lib/uart.c
 
-UART library programmed for 16MHz clock ATMega328p
+UART library programmed for 16MHz clock ATMega2560
 
-Comments:
-6/2/25: Created file, note that this code assumes avr/io.h is already included in the main .c file
+Comments
+--------
+6/30/25: Modified for efficiency and ATMega2560
 */
 #include <avr/io.h>
 #include "uart.h"
@@ -13,7 +14,10 @@ Comments:
 void uart_init(void){
     UCSR0B = (1 << TXEN0);                  //enable the UART transmitter
     UCSR0C = (1 << UCSZ01) | (1 << UCSZ00); //set 8 bit character size
-    UBRR0L = 103;                           //set baud rate to 9600 for 16 MHz crystal
+
+
+    UBRR0L = 103;     
+    UBBR0H = 0;                      //set baud rate to 9600 for 16 MHz crystal
 }
  
 // Send a single character
@@ -24,7 +28,7 @@ void uart_send_char(unsigned char ch){
  
 // Send a string of characters using uart_send
 void uart_send_string(char *stringAddress){
-   unsigned char i;
-    for (i = 0; i < strlen(stringAddress); i++)
-        uart_send_char(stringAddress[i]);
+    while (*stringAddress){
+        uart_send_char(*stringAddress++);
+    }
 }
