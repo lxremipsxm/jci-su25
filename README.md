@@ -3,7 +3,7 @@
 ## Phases
 + **Design Phase** (5/26/25 to 5/30/25)
 + **Component Setup and Testing** (Estimated: 6/4/25 to 6/6/25; Actual: 6/2/25 to 6/20/25)
-+ **Construction** (Estimated: 6/9/25 to 6/23/25)
++ **Construction** (Estimated: 6/20/25 to 6/30/25)
 + **Automation** (Estimated: 6/16/25 to 6/20/25)
 + **Refinement + Adding Features**
 
@@ -68,8 +68,7 @@ Note that in `drv8825.h`, the `enum drv8825_drv_pins_e` typedef is ordered signi
 
 Once the DRV8825 comes in, I can test the stepper and the driver simultaneously, and I can conclude this phase. 
 
-Update(6/16/25): The driver component has come in. 
-
+Update(6/16/25): The driver component has come in. I completed testing on 6/18, primarily because I was trying to understand why my motor was not receiving any current from the drv8825 at all. Apparently I had misunderstood the pinout on the board. The pins 2A, 1A, 1B, and 2B are outputs to the stepper motor, in that order. The NEMA 17 stepper motor has four input wires, or two pairs of wires that connect to two electromagnetic coils in the inner workings of the motor. I was connecting each pair to the driver by number rather than letter; i.e. I connected one pair to 1A and 1B and another to 2A and 2B. This did not work, and I was about to return the driver, but after trying some permutations of the four wires, I realized that the combination that I needed to use was by letter, i.e. one pair to 1A and 2A, and another to 1B and 2B. 
 
 ### NMOSFETs (6/16)
 
@@ -79,5 +78,34 @@ I'm thinking of using 4 pins on `PORTB`. Depending on the servos necessary, I ca
 
 For testing, I'll send a constant `HIGH` through the drain terminal, read the output on the source terminal, and constantly vary the gate voltage between 5V and 0V (1 and 0). The output should be exactly the same as the gate input(`HIGH` or `LOW`). I may also have to use resistors on the terminals depending on their rating. 
 
+
+## Modification and Adjustments (6/24)
+
+### NMOSFET Removal
+
+I've further researched and tested the NMOSFETs; unfortunately, I won't be able to use them, as the process is too tenuous to perform consistently, especially when the stepper and other devices are factored in. This is a result of the servo's very restrictive functionality: it must constantly be supplied with a PWM signal of period 20ms. In order to implement the NMOSFET switching mechanism, each servo needs to be assigned 5ms of time for its dedicated duty cycle. However, my uart library and any delays that I incorporate into the design will create tiny delays in the lower level workings of the chip. With the context of 20ms, a small delay could be significant. Overall, the 20ms requirement will not always be satisfied because my ATmega will be busy handling other tasks while driving the servos, which means they will be jittery, leading to an unsatisfactory, slow solution.
+
+Instead, I will use a second timer on ATMega328p. This will be significantly more straightforward, as each timer has two PWM outputs, and I can simply modify duty cycles depending on the servo that needs to rotate. Now, I'm faced with additional topics to address.
+
+First, I only have one 16-bit timer on the ATmega328p, called Timer1. The other two timers, Timer0 and Timer2, are 8-bit timers. It is recommended not to use Timer0, as it is involved in core processes, such as delays. Therefore, I need to use one 16-bit timer and a 8-bit timer. Each timer has two outputs that can be controlled independently(OCxA and OCxB), so that's four servo motors. To make functionality consistent, I will emulate Timer2 (8bit) as closely to Timer1 as possible. If this does not work, I have a ATmega2560 that I can swap the ATmega328p with. Unlike the 328p, it has four 16-bit timers, and will be much simpler to work with.
+
+Second, I have to consider moving some of the pins around. PD3 is OC2A, or output compare 2A. This is one of two outputs from Timer2. Since this pin is irreplacable, I will 'shift' some pins on the DRV8825 up one pin, and solder the EN pin to ground permanently. I'll use the SLP pin to reduce power usage by the stepper motor instead.
+
+
+### Power Adjustments 
+
+I would like the final design to be convenient to use. A single power supply would be extremely useful in that case, rather than supplying the ATmega with a separate USB 5V DC supply, I just power the entire thing with the 12V being used to power the stepper motor. For this, I'm ordering a buck converter, that efficiently and reliably 'steps down' the input voltage to a smaller output voltage. I'm going with a LM2596S buck converter and will connect it in parallel to the stepper motor input power coming in from the 12V DC supply. The output can then go to the Arduino UNO's Vin pin. 
+
+
+I will also use this supply to power the four servos, as they each can spike at 700mA+ under load, potentially causing errors in logic if all of them are powered by the UNO. Additionally, I will include a 470-1000uF capacitor to smooth out current.
+
 ---
 
+
+## Construction (6/26)
+
+While modifying the servo design, I am simultaneously working on constructing the mechanism for the final automaton. I've attached the stepper to the center of a base made of wood, and have fixed the drum to the top of the motor. I've marked the areas where the servos need to go, and have cleared out the area which they require to rotate. I've sanded down the card slots for smoother up-and-down motion in the drum (the original texture from the 3D printer was hindering movement significantly). If required, I will apply grease to the slots, but with the current loose fit of the slots into their holes, I believe that's not entirely necessary. While doing this, I realized I should have rounded the edges of the sticks connected to the card slots in the 3D model for easier movement when in contact with the pear cam, but I sanded down the edges to a satisfactory degree; combined with the drum, this will work just fine. 
+
+Along with this, I've constructed a clean perfboard with all the functionality discussed so far. The DRV8825 connects directly into the board, and an array of 8 pins goes from the UNO PortD (Digital pins 0 to 7, excluding 3) into 8 female headers into the driver. There are four sets of 3 male headers in the board for connections to the servo motors. These have their GND pins connected together in parallel. Similarly, the VCC pins are connected in parallel. I've included additional male headers for GND and V+ connections as power rails on the perfboard(5 GND, 3 V+). As mentioned earlier, the DRV8825's EN pin will connect to the GND rail. 
+
+---
