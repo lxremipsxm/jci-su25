@@ -107,8 +107,11 @@ I need to modify my `servo_set_pos()` method to take another parameter, and use 
 I've decided this is how I will connect my servos:
 
 Servo 1: OC1A - PB1 (Arduino D9)
+
 Servo 2: OC1B - PB2 (Arduino D10)
+
 Servo 3: OC2A - PB3 (Arduino D11)
+
 Servo 4: OC2B - PD3 (Arduino D3)
 
 
@@ -122,17 +125,32 @@ Original clock speed = 16MHz
 
 $\therefore \frac{16000000}{12750} = 1254$
 
-The maximum prescaler value on the timers on the ATmega328p is 1024. If we use 1024 as the prescaler for the timer clock, it results in a period of 16.4ms. This will not work; instead, I'll use an Arduino Mega, with a ATmega2560, and use one of its four timers. 
+The maximum prescaler value on the timers on the ATmega328p is 1024. If we use 1024 as the prescaler for the timer clock, it results in a period of 16.4ms. This will not work; instead, I'll use an Arduino Mega, with a ATmega2560, and use two of its four timers. 
 
 
 ### Adaptation for ATmega2560
 
 Since I am moving everything to an ATmega2560 for the additional timers, I have several things to update: the makefile, the DRV8825 `stepper_pin_set()` function, and the custom servo library. I will make these changes in a directory labeled `Final_Build/`, where I will store all the code that is fully functional and ready to go.
 
-I will use the following pins: 
+I will use the following pins on the 2560:
+
+Pin name  |  Purpose
+
+PortF 0:7 | DRV8825 EN:DIR
+
+OC1A(PB5) | Servo 1 PWM
+
+OC1B(PB6) | Servo 2 PWM
+
+OC1C(PB7) | Servo 3 PWM
+
+OC3A(PH3) | Servo 4 PWM
+
+OC1x means Timer1 and OC3x means Timer3; both timers are 16-bit, and can easily manage a 20ms period waveform. Since the DRV8825 `stepper_pin_set()` function is adapted for a single port, I don't need to make too many changes(I just have to change `PORTD` to `PORTF`)
 
 
 
+While modifying the makefile for the 2560, I ran into a bottleneck. The programmer that is typically used by the Arduino IDE to flash to the Arduino Mega 2560 is called 'wiring', only offered in newer versions of `avrdude`, the tool I use to flash and compile. My version of `avrdude` was from 2010, so it didn't have 'wiring' as an option. It took me a while, but I found a workaround, where I call the avrdude version used by the IDE instead of the one I have installed (also in my PATH). In the makefile, this shows up as two file paths, one for `avrdude.exe` and the other for `avrdude.config`, which are configurations I need to use the more modern version.
 
 ---
 
