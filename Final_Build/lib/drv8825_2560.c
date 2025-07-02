@@ -24,7 +24,7 @@ Comments
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include "drv8825.h"
+#include "drv8825_2560.h"
 
 typedef struct drv8825_drv_data_s
 {

@@ -8,13 +8,15 @@
 
 
 #-----Constants-----
-SERIALPORT =  COM3 #required for flashing to ATmega
+SERIALPORT =  COM4 #required for flashing to ATmega
 CLOCKSPEED = 16000000	
-PROGRAMMER = wiring #programmer for 2560 is different
+PROGRAMMER = arduino
+AVRDUDE = "C:\Users\siddv\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino17\bin\avrdude.exe"
+AVRDUDE_CONF = "C:\Users\siddv\AppData\Local\Arduino15\packages\arduino\tools\avrdude\6.3.0-arduino17\etc\avrdude.conf"
 
 
 #-----Relevant files-----
-SOURCEFILE = main.c lib/uart.c lib/drv8825.c #main .c file + libraries .c files
+SOURCEFILE = main.c lib/uart.c lib/drv8825_2560.c lib/servo.c #main .c file + libraries .c files
 
 
 #-----Recipes-----
@@ -29,7 +31,7 @@ main.elf: $(SOURCEFILE)
 	avr-gcc -std=c99 -Wall -Os -DF_CPU=$(CLOCKSPEED) -mmcu=atmega2560 -o main.elf $(SOURCEFILE)
 
 flash:	begin #flash to ATMega
-	avrdude -c $(PROGRAMMER) -b 115200 -P $(SERIALPORT) -p atmega2560 -U flash:w:main.hex:i
+	$(AVRDUDE) -C $(AVRDUDE_CONF) -v -c wiring -p atmega2560 -P COM4 -b 115200 -D -U flash:w:main.hex:i
 
 clean: #remove intermediate files
 	rm -f main.elf main.hex

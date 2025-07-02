@@ -3,8 +3,8 @@
 ## Phases
 + **Design Phase** (5/26/25 to 5/30/25)
 + **Component Setup and Testing** (Estimated: 6/4/25 to 6/6/25; Actual: 6/2/25 to 6/20/25)
-+ **Construction** (Estimated: 6/20/25 to 6/30/25)
-+ **Automation** (Estimated: 6/16/25 to 6/20/25)
++ **Construction** (Estimated: 6/20/25 to 7/1/25)
++ **Automation** (Estimated: 7/7/25 to 7/10/25)
 + **Refinement + Adding Features**
 
 
@@ -128,7 +128,7 @@ $\therefore \frac{16000000}{12750} = 1254$
 The maximum prescaler value on the timers on the ATmega328p is 1024. If we use 1024 as the prescaler for the timer clock, it results in a period of 16.4ms. This will not work; instead, I'll use an Arduino Mega, with a ATmega2560, and use two of its four timers. 
 
 
-### Adaptation for ATmega2560
+### Adaptation for ATmega2560 (7/1)
 
 Since I am moving everything to an ATmega2560 for the additional timers, I have several things to update: the makefile, the DRV8825 `stepper_pin_set()` function, and the custom servo library. I will make these changes in a directory labeled `Final_Build/`, where I will store all the code that is fully functional and ready to go.
 
@@ -150,15 +150,21 @@ OC1x means Timer1 and OC3x means Timer3; both timers are 16-bit, and can easily 
 
 
 
-While modifying the makefile for the 2560, I ran into a bottleneck. The programmer that is typically used by the Arduino IDE to flash to the Arduino Mega 2560 is called 'wiring', only offered in newer versions of `avrdude`, the tool I use to flash and compile. My version of `avrdude` was from 2010, so it didn't have 'wiring' as an option. It took me a while, but I found a workaround, where I call the avrdude version used by the IDE instead of the one I have installed (also in my PATH). In the makefile, this shows up as two file paths, one for `avrdude.exe` and the other for `avrdude.config`, which are configurations I need to use the more modern version.
+While modifying the makefile for the 2560, I ran into a slight issue. The programmer that is typically used by the Arduino IDE to flash to the Arduino Mega 2560 is called 'wiring', only offered in newer versions of `avrdude`, the tool I use to flash and compile. My version of `avrdude` was last updated in 2010, so it didn't have 'wiring' as an option. It took me a while, but I found a workaround, where I call the avrdude version used by the IDE instead of the one I have installed (also in my PATH). In the makefile, this shows up as two file paths, one for `avrdude.exe` and the other for `avrdude.config`, which are configurations I need to use the latest version.
 
 ---
 
 
 ## Construction (6/26)
 
-While modifying the servo design, I am simultaneously working on constructing the mechanism for the final automaton. I've attached the stepper to the center of a base made of wood, and have fixed the drum to the top of the motor. I've marked the areas where the servos need to go, and have cleared out the area which they require to rotate. I've sanded down the card slots for smoother up-and-down motion in the drum (the original texture from the 3D printer was hindering movement significantly). If required, I will apply grease to the slots, but with the current loose fit of the slots into their holes, I believe that's not entirely necessary. While doing this, I realized I should have rounded the edges of the sticks connected to the card slots in the 3D model for easier movement when in contact with the pear cam, but I sanded down the edges to a satisfactory degree; combined with the drum, this will work just fine. 
+While modifying the servo design, I am simultaneously working on constructing the mechanism for the final automaton. I've attached the stepper to the center of a base made of wood, and have fixed the drum to the top of the motor. I've marked the areas where the servos need to go, and have cleared out the area which they require to rotate. I've sanded down the card slots for smoother up-and-down motion in the drum (the original texture from the 3D printer was hindering movement significantly). If required, I will apply grease to the slots, but with the current loose fit of the slots into their holes, I believe that's not entirely necessary. While doing this, I realized I should have rounded the edges of the sticks connected to the card slots in the 3D model for easier movement when in contact with the pear cam, but I sanded down the edges to a satisfactory degree; combined with the restricted degrees of freedom offered by the drum, this will work just fine. 
 
-Along with this, I've constructed a clean perfboard with all the functionality discussed so far. The DRV8825 connects directly into the board, and an array of 8 pins goes from the UNO PortD (Digital pins 0 to 7, excluding 3) into 8 female headers into the driver. There are four sets of 3 male headers in the board for connections to the servo motors. These have their GND pins connected together in parallel. Similarly, the VCC pins are connected in parallel. I've included additional male headers for GND and V+ connections as power rails on the perfboard(5 GND, 3 V+). As mentioned earlier, the DRV8825's EN pin will connect to the GND rail. 
+Along with this, I've constructed a clean perfboard with all the functionality discussed so far: 
+
+The DRV8825 connects directly into the board, and an array of 8 pins goes from the UNO PortD (Digital pins 0 to 7, excluding 3) into 8 female headers into the driver. **Note**: The design has been switched to an Arduino Mega. Therefore, these 8 pins will alternatively be connected into PORTF on the ATMega2560, digital pins 54 to 61. 
+
+There are four sets of 3 male headers in the board for connections to the servo motors. These have their GND pins connected together in parallel. Similarly, the VCC pins are connected in parallel. I've included additional male headers for GND and V+ connections as power rails on the perfboard(5 GND, 3 V+). As mentioned earlier, the DRV8825's EN pin will connect to the GND rail. 
+
+
 
 ---

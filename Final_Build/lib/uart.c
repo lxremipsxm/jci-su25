@@ -16,8 +16,7 @@ void uart_init(void){
     UCSR0C = (1 << UCSZ01) | (1 << UCSZ00); //set 8 bit character size
 
 
-    UBRR0L = 103;     
-    UBBR0H = 0;                      //set baud rate to 9600 for 16 MHz crystal
+    UBRR0L = 103;                      //set baud rate to 9600 for 16 MHz crystal
 }
  
 // Send a single character
