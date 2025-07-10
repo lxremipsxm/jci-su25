@@ -150,7 +150,7 @@ OC1x means Timer1 and OC3x means Timer3; both timers are 16-bit, and can easily 
 
 
 
-While modifying the makefile for the 2560, I ran into a slight issue. The programmer that is typically used by the Arduino IDE to flash to the Arduino Mega 2560 is called 'wiring', only offered in newer versions of `avrdude`, the tool I use to flash and compile. My version of `avrdude` was last updated in 2010, so it didn't have 'wiring' as an option. It took me a while, but I found a workaround, where I call the avrdude version used by the IDE instead of the one I have installed (also in my PATH). In the makefile, this shows up as two file paths, one for `avrdude.exe` and the other for `avrdude.config`, which are configurations I need to use the latest version.
+While modifying the makefile for the 2560, I ran into a slight issue. The programmer that is typically used by the Arduino IDE to flash to the Arduino Mega 2560 is called 'wiring', only offered in newer versions of `avrdude`, the tool I use to flash and compile. My version of `avrdude` was last updated in 2010, so it didn't have 'wiring' as an option. It took me a while, but I found a workaround, where I call the avrdude version used by the IDE instead of the one I have installed (also in my PATH). In the makefile, this shows up as two file paths, one for `avrdude.exe` and the other for `avrdude.config`, which are configurations I need to use the latest version. None of this will affect the actual `.hex` flashed to the ATmega, but I decided it was important to mention this roadblock. 
 
 ---
 
@@ -159,12 +159,30 @@ While modifying the makefile for the 2560, I ran into a slight issue. The progra
 
 While modifying the servo design, I am simultaneously working on constructing the mechanism for the final automaton. I've attached the stepper to the center of a base made of wood, and have fixed the drum to the top of the motor. I've marked the areas where the servos need to go, and have cleared out the area which they require to rotate. I've sanded down the card slots for smoother up-and-down motion in the drum (the original texture from the 3D printer was hindering movement significantly). If required, I will apply grease to the slots, but with the current loose fit of the slots into their holes, I believe that's not entirely necessary. While doing this, I realized I should have rounded the edges of the sticks connected to the card slots in the 3D model for easier movement when in contact with the pear cam, but I sanded down the edges to a satisfactory degree; combined with the restricted degrees of freedom offered by the drum, this will work just fine. 
 
+![Construction Process Update 1](img/IMG_6782.jpeg)
+
 Along with this, I've constructed a clean perfboard with all the functionality discussed so far: 
 
 The DRV8825 connects directly into the board, and an array of 8 pins goes from the UNO PortD (Digital pins 0 to 7, excluding 3) into 8 female headers into the driver. **Note**: The design has been switched to an Arduino Mega. Therefore, these 8 pins will alternatively be connected into PORTF on the ATMega2560, digital pins 54 to 61. 
 
-There are four sets of 3 male headers in the board for connections to the servo motors. These have their GND pins connected together in parallel. Similarly, the VCC pins are connected in parallel. I've included additional male headers for GND and V+ connections as power rails on the perfboard(5 GND, 3 V+). As mentioned earlier, the DRV8825's EN pin will connect to the GND rail. 
+There are four sets of 3 male headers in the board for connections to the servo motors. These have their GND pins connected together in parallel. Similarly, the VCC pins are connected in parallel. I've included additional male headers for GND and V+ connections as power rails on the perfboard(5 GND, 3 V+).  
 
+![Perfboard](img/IMG_6787.jpeg)
+
+
+(7/2): I've added guide rails to each card slot to ensure they don't spin when they are being raised.
+
+---
+
+## Automation (7/3)
+
+The final step is to have the stepper and servos work simultaneously. 
+
+There was a slight issue in calculating the pulse width being sent into the DRV8825's STEP pin, which made rotations and the entire `drv8825_move_steps()` function incorrect. The issue was in the division: the original author included a divisor of the number of steps the user wanted to move. However, this number is already being used to generate the pulses in the `for` loop, which means that dividing the pulse width by the number of steps created massive inaccuracies. Instead, in the calculation, I replaced the `steps` parameter with the `steps_per_revolution` variable defined in the driver settings, and this did the trick.
+
+After some testing, I've determined that the number of (full) steps between each card slot is approximately 15. I will need to account for slight inaccuracies due to the limitations of a NEMA17 stepper motor, so I will most likely use the maximum number of microsteps. Upon further testing, I've concluded that using an 8x microstep setting and then running 102 microsteps yields very accurate results.
+
+I'll define a function to convert card 'numbers' into the number of steps needed by the stepper to rotate to a card from it's current position. I will also need to keep track of which slot 'number' the stepper is at, while ensuring that the stepper takes the fastest route possible (i.e. rotates in the direction that is most efficient movement-wise).
 
 
 ---
