@@ -24,6 +24,7 @@ Comments
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <util/delay.h>
 #include "drv8825_2560.h"
 
 typedef struct drv8825_drv_data_s
@@ -122,10 +123,12 @@ void drv8825_move_steps(uint16_t steps, drv8825_dir_t dir)
 {
     if (dir == DRV8825_DIR_FORWARD)
     	drv_data.drv.pin_set(DRV8825_DRV_DIR_PIN, false);
+		
     else
 		drv_data.drv.pin_set(DRV8825_DRV_DIR_PIN, true);
-
-    uint16_t pulse_time_us = (60.0*1000000L/steps/drv_data.scr.microsteps/drv_data.scr.rpm);
+		
+	_delay_us(10);
+    uint32_t pulse_time_us = (60.0*1000000L/drv_data.scr.steps_per_revolution/drv_data.scr.microsteps/drv_data.scr.rpm);
 
     for (uint16_t i = 0; i < steps; i++)
     {

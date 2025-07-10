@@ -21,14 +21,14 @@ typedef enum drv8825_dir_e //rotation direction
 
 typedef enum drv8825_drv_pins_e //Pin organization
 {
-	/* OUT */  DRV8825_DRV_EN_PIN=0,
-	/* OUT */ DRV8825_DRV_M0_PIN,
-	/* OUT */ DRV8825_DRV_M1_PIN,
-	/* OUT */ DRV8825_DRV_M2_PIN,
-	/* OUT */ DRV8825_DRV_RST_PIN,
-	/* OUT */ DRV8825_DRV_SLP_PIN,
-	/* OUT */ DRV8825_DRV_STEP_PIN,
-	/* OUT */ DRV8825_DRV_DIR_PIN,
+	/* OUT */  DRV8825_DRV_EN_PIN=7,
+	/* OUT */ DRV8825_DRV_M0_PIN=6,
+	/* OUT */ DRV8825_DRV_M1_PIN=5,
+	/* OUT */ DRV8825_DRV_M2_PIN=4,
+	/* OUT */ DRV8825_DRV_RST_PIN=3,
+	/* OUT */ DRV8825_DRV_SLP_PIN=2,
+	/* OUT */ DRV8825_DRV_STEP_PIN=1,
+	/* OUT */ DRV8825_DRV_DIR_PIN=0,
 
 } drv8825_drv_pins_t;
 
