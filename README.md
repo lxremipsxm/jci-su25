@@ -169,6 +169,8 @@ There are four sets of 3 male headers in the board for connections to the servo 
 
 ![Perfboard](img/IMG_6787.jpeg)
 
+Note that this design also includes the LM2596S buck converter (the green board connected to 12V in), which supplies the MEGA through its 5V pin.
+
 
 (7/2): I've added guide rails to each card slot to ensure they don't spin when they are being raised.
 
@@ -178,11 +180,16 @@ There are four sets of 3 male headers in the board for connections to the servo 
 
 The final step is to have the stepper and servos work simultaneously. 
 
-There was a slight issue in calculating the pulse width being sent into the DRV8825's STEP pin, which made rotations and the entire `drv8825_move_steps()` function incorrect. The issue was in the division: the original author included a divisor of the number of steps the user wanted to move. However, this number is already being used to generate the pulses in the `for` loop, which means that dividing the pulse width by the number of steps created massive inaccuracies. Instead, in the calculation, I replaced the `steps` parameter with the `steps_per_revolution` variable defined in the driver settings, and this did the trick.
+There was a slight issue in calculating the pulse width being sent into the DRV8825's STEP pin, which made rotations and the entire `drv8825_move_steps()` function inaccurate. The inaccuracy was in the division: the original author included a divisor of the number of steps the user wanted to move. However, this variable is already being used to generate the pulse width in the `for` loop. Instead, in the calculation, I replaced the `steps` parameter with the `steps_per_revolution` variable defined in the driver settings `drv8825_scr_t scr`, and this did the trick.
 
-After some testing, I've determined that the number of (full) steps between each card slot is approximately 15. I will need to account for slight inaccuracies due to the limitations of a NEMA17 stepper motor, so I will most likely use the maximum number of microsteps. Upon further testing, I've concluded that using an 8x microstep setting and then running 102 microsteps yields very accurate results.
+After some testing, I've determined that the number of (full) steps between each card slot is approximately 15. I will need to account for slight inaccuracies due to the limitations of a NEMA17 stepper motor, so I will most likely use the maximum number of microsteps (32 for this driver).
 
 I'll define a function to convert card 'numbers' into the number of steps needed by the stepper to rotate to a card from it's current position. I will also need to keep track of which slot 'number' the stepper is at, while ensuring that the stepper takes the fastest route possible (i.e. rotates in the direction that is most efficient movement-wise).
+
+
+### Keypad Update (7/5)
+
+I've included a keypad in order to have a simple user interface; it is connected directly through PortA on the ATmega2560, pins PA0 to PA7. Currently, I've included subroutines straight in the `Final_Build/main.c` file, but I will probably move it into library files later and store them in `Final_Build/lib/`. The numbers correspond to card slots and the letters A through D correspond to the reader number/servo number.
 
 
 ---
