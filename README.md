@@ -191,5 +191,10 @@ I'll define a function to convert card 'numbers' into the number of steps needed
 
 I've included a keypad in order to have a simple user interface; it is connected directly through PortA on the ATmega2560, pins PA0 to PA7. Currently, I've included subroutines straight in the `Final_Build/main.c` file, but I will probably move it into library files later and store them in `Final_Build/lib/`. The numbers correspond to card slots and the letters A through D correspond to the reader number/servo number.
 
+Edit(7/10): I've decided I don't really need to create a library form for the keypad functionality, and it makes it easier to refer to when I'm coding the interface to the stepper motor rotation.
+
+Over this week, I've further modified the main method to take input from the keypad and signal the stepper to move the appropriate number of slots forward or backward. The direction that the MCU decides is the shortest path (for example, rather than go 15 slots forward to get from 1 to 16, move back one slot). 
+
+I had a ton of issues debugging the keypad, especially with adding constraints that ensure users enter values in the correct format. The biggest challenge was when my `current_pos` variable, which tracks the current card position at reader A (I will later rename it to current_pos_A) was not updating. Since the movement amount is fully dependent on this value, everything I entered through the keypad always gave me an incorrect result. I later realized that I had accidentally run an `sprintf()` on a buffer with an allocated memory that was too small for the string I wanted to copy to the buffer, leading to the function involving `current_pos` crashing. Since I was relying on pointers to modify the value outside the subroutine, the crash was catastrophic to the operation of my system. Eventually, I removed the `sprintf()` from the function to place debug messages differently and realized everything was working again.
 
 ---
