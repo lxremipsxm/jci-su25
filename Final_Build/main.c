@@ -22,6 +22,7 @@ Comments
 #include "lib/uart.h"
 #include "lib/servo.h"
 #include "lib/drv8825_2560.h"
+#include "lib/SSD1306.h"
 
 
 //-----Stepper Declarations-----//
@@ -174,11 +175,15 @@ char keypad_char() {
             if (key) break; //wait until a key is pressed
         }
     }
+
+    
     return key;
 }
 
 
 void keypad_string(char *stringAddress){
+    OLED_GoToLine(1);
+    OLED_DisplayString("Input: ");
 
     char response;
     uint8_t len = 0;
@@ -187,14 +192,20 @@ void keypad_string(char *stringAddress){
         response = keypad_char();
         
 
-        if (response == '*') 
+        if (response == '*') {
+            OLED_Clear();
             break;
+        }
 
 
         if (len < 5){
             stringAddress[len++] = response; //concatenate with previous numbers entered
             stringAddress[len] = '\0'; //add null terminator
+            
         }
+        
+        OLED_GoToLine(2);
+        OLED_DisplayString(stringAddress);
 
         _delay_ms(350);
     }
@@ -207,6 +218,9 @@ int main(void)
 {
 
     //Setup
+    OLED_Init();
+    OLED_GoToLine(4);
+    OLED_DisplayString("Initializing...");
     uart_init();
     drv8825_init(&drv, scr);
     servo_start_pwm();
@@ -217,11 +231,13 @@ int main(void)
     drv8825_set_steps_per_revolution(200);
     drv8825_set_microsteps(32);
     drv8825_set_microsteps_pin(32);
-    int current_pos = 1; // 1 to 16 for our purposes
+    int current_pos = 1; // current card at reader A
 
     char code[4];
 
     _delay_ms(1000);
+
+    OLED_Clear();
     
 
     while(1){
@@ -243,16 +259,31 @@ int main(void)
 
         if (len > 3){
             uart_send_string("Invalid input. Input longer than three characters. \r\n");
+            OLED_GoToLine(4);
+            OLED_DisplayString("Input too long.");
+           
         }
 
         else if ((code[len-1] != 'A') && (code[len-1] != 'B') && (code[len-1] != 'C') && (code[len-1] != 'D')){
             uart_send_string("Invalid input.  Enter a card number followed by the reader you would like it to be read by. E.g. 1A or 01A.\r\n");
+            OLED_GoToLine(3);
+            OLED_DisplayString("Incorrect Format.");
+            OLED_GoToLine(4);
+            OLED_DisplayString("e.g. 01A or 1A");
+            
+
         }
 
         else if ((code[0] != '1' && code[0] != '0') || (code[1] < '0' || code[1] > '9') || (code[0] == '1' && code[1] >= '7')){
             
             uart_send_string("Invalid input. Either your input card number is out of bounds, or you've entered a value with the wrong format. ");
             uart_send_string("Enter a card number followed by the reader you would like it to be read by. E.g. 1A or 01A. \r\n");
+            OLED_GoToLine(4);
+            OLED_DisplayString("Card value out of");
+            OLED_GoToLine(5);
+            OLED_DisplayString("bounds 1-16.");
+
+            
         }
 
         else {
@@ -264,7 +295,9 @@ int main(void)
             card_str[0] = code[0];
             card_str[1] = code[1];
             card_str[2] = '\0';
+
             int card_int = atoi(card_str);
+
 
             /*debug message
             char debug_msg[30];
@@ -276,6 +309,11 @@ int main(void)
 
             stepper_move_to_pos(card_int, &current_pos);
 
+            char msg[32];
+            sprintf(msg, "Card %d to reader %c", card_int, reader);
+            OLED_GoToLine(4);
+            OLED_DisplayString(msg); 
+
             /*debug message 2
             char debug_msg2[32];
             sprintf(debug_msg2, "current pos after = %d\r\n", current_pos);
@@ -283,12 +321,13 @@ int main(void)
         
             _delay_ms(200);
             servo_raise(1);
+            
 
             
             
         }
 
-
+        OLED_Clear();
         _delay_ms(700);
     }
 

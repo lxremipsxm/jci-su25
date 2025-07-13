@@ -16,7 +16,7 @@ AVRDUDE_CONF = "C:\Users\siddv\AppData\Local\Arduino15\packages\arduino\tools\av
 
 
 #-----Relevant files-----
-SOURCEFILE = main.c lib/uart.c lib/drv8825_2560.c lib/servo.c #main .c file + libraries .c files
+SOURCEFILE = main.c lib/uart.c lib/drv8825_2560.c lib/servo.c lib/SSD1306.c lib/i2c.c#main .c file + libraries .c files
 
 
 #-----Recipes-----
