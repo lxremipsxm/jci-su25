@@ -18,6 +18,7 @@ Comments
 #include <util/delay.h>
 #include "lib/uart.h"
 #include "lib/servo.h"
+#include "lib/SSD1306.h"
 
 //-----Main method-----//
 int main(void){
@@ -61,13 +62,22 @@ int main(void){
     
     }*/
 
-    /*Testing servos*/
+    /*Testing servos
     servo_start_pwm();
 
     while(1){
         servo_set_pos(0);
         _delay_ms(1000);
         servo_set_pos(90);
+        _delay_ms(1000);
+    }*/
+
+    /*OLED Testing*/
+
+    OLED_Init();
+    while(1){
+        OLED_GoToLine(4);
+        OLED_DisplayString("interior");
         _delay_ms(1000);
     }
 
