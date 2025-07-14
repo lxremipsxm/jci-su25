@@ -45,6 +45,9 @@ typedef struct drv8825_scr_s //stepper motor settings
 	uint16_t rpm;
 } drv8825_scr_t;
 
+
+void timer4_init();
+void timer4_delay_us(uint16_t us);
 void drv8825_set_microsteps(uint8_t microsteps); //set microsteps; takes integer, options: {1,2,4,8,16,32}
 void drv8825_set_steps_per_revolution(uint16_t steps_per_revolution); //set number of steps per revolution
 void drv8825_set_rpm(uint16_t rpm); 

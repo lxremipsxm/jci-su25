@@ -150,7 +150,7 @@ typedef enum
 #define Enable_OLED_DisplayNumber 1
 #define Enable_OLED_DisplayFloatNumber 0
 #define Enable_OLED_Printf 0
-#define Enable_OLED_DisplayLogo 0
+#define Enable_OLED_DisplayLogo 1
 #define Enable_OLED_EnableInversion 0
 #define Enable_OLED_DisableInversion 0
 #define ENABLE_OLED_VerticalGraph 0

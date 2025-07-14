@@ -25,7 +25,27 @@ Comments
 #include <stdio.h>
 #include <string.h>
 #include <util/delay.h>
+#include <avr/io.h>
 #include "drv8825_2560.h"
+
+
+void timer4_init() //for more accurate pulse times
+{
+    TCCR4A = 0;
+    TCCR4B = (1 << WGM42);     // CTC mode
+    TCCR4B |= (1 << CS41);     // Prescaler /8
+    TCNT4 = 0;
+}
+
+void timer4_delay_us(uint16_t us)
+{
+    uint16_t ticks = us * 2;   // 0.5 µs per tick
+    TCNT4 = 0;
+    OCR4A = ticks;
+    TIFR4 |= (1 << OCF4A);     // Clear compare match flag
+
+    while (!(TIFR4 & (1 << OCF4A))); // Wait for match
+}
 
 typedef struct drv8825_drv_data_s
 {
@@ -132,10 +152,10 @@ void drv8825_move_steps(uint16_t steps, drv8825_dir_t dir)
 
     for (uint16_t i = 0; i < steps; i++)
     {
-    	drv_data.drv.pin_set(DRV8825_DRV_STEP_PIN, true);
-    	drv_data.drv.delay_us(pulse_time_us);
+        drv_data.drv.pin_set(DRV8825_DRV_STEP_PIN, true);
+    	timer4_delay_us(pulse_time_us);
     	drv_data.drv.pin_set(DRV8825_DRV_STEP_PIN, false);
-    	drv_data.drv.delay_us(pulse_time_us);
+    	timer4_delay_us(pulse_time_us);
     }
 }
 
@@ -155,5 +175,6 @@ bool drv8825_init(drv8825_drv_t *drv, drv8825_scr_t scr)
 	drv8825_set_microsteps_pin(scr.microsteps);
 	drv8825_set_slp_pin(true);
 	drv8825_set_rst_pin(true);
+	timer4_init();
 	return true;
 }
