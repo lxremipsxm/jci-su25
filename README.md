@@ -176,7 +176,7 @@ Note that this design also includes the LM2596S buck converter (the green board 
 
 ---
 
-## Automation (7/3)
+## Automation, Features and Refinement (7/3)
 
 The final step is to have the stepper and servos work simultaneously. 
 
@@ -195,6 +195,11 @@ Edit(7/10): I've decided I don't really need to create a library form for the ke
 
 Over this week, I've further modified the main method to take input from the keypad and signal the stepper to move the appropriate number of slots forward or backward. The direction that the MCU decides is the shortest path (for example, rather than go 15 slots forward to get from 1 to 16, move back one slot). 
 
-I had a ton of issues debugging the keypad, especially with adding constraints that ensure users enter values in the correct format. The biggest challenge was when my `current_pos` variable, which tracks the current card position at reader A (I will later rename it to current_pos_A) was not updating. Since the movement amount is fully dependent on this value, everything I entered through the keypad always gave me an incorrect result. I later realized that I had accidentally run an `sprintf()` on a buffer with an allocated memory that was too small for the string I wanted to copy to the buffer, leading to the function involving `current_pos` crashing. Since I was relying on pointers to modify the value outside the subroutine, the crash was catastrophic to the operation of my system. Eventually, I removed the `sprintf()` from the function to place debug messages differently and realized everything was working again.
+I had a ton of issues debugging the keypad, especially with adding constraints that ensure users enter values in the correct format. The biggest challenge was when my `current_pos` variable, which tracks the current card position at reader A (I will later rename it to current_pos_A) was not updating. Since the movement amount is fully dependent on this value, everything I entered through the keypad always gave me an incorrect result. I later realized that I had accidentally run an `sprintf()` on a buffer with an allocated memory that was too small for the string I wanted to copy to the buffer, leading to `stepper_move_to_pos()` (the function involving `current_pos`) crashing. Since I was relying on pointers to modify the value outside the subroutine, the crash was catastrophic to the operation of my system. Eventually, I removed the `sprintf()` from the function to place debug messages outside the subroutine and realized everything was working again, which is how I deduced that was broken.
+
+
+### SSD1306 Update (7/13)
+
+Since UART will not be visible to a user during the use of the system (it's not possible to connect the Arduino to a computer through USB while simultaneously powering it via the LM2596S), I'm including a SSD1306 that will display useful information to a user, such as error codes.
 
 ---
