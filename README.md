@@ -4,7 +4,7 @@
 + **Design Phase** (5/26/25 to 5/30/25)
 + **Component Setup and Testing** (Estimated: 6/4/25 to 6/6/25; Actual: 6/2/25 to 6/20/25)
 + **Construction** (Estimated: 6/20/25 to 7/1/25)
-+ **Automation** (Estimated: 7/7/25 to 7/10/25)
++ **Automation** (Estimated: 7/7/25 to 7/20/25)
 + **Refinement + Adding Features**
 
 
@@ -27,10 +27,11 @@ This is my first time using Onshape. I spent about a day learning Onshape and ho
 
 ##### Print (6/2)
 
-I've sent the `.stl` files to be printed by [Robu.in's 3D printing service](https://robu.in/product/3d-printing-service/), which I will receive within a week's time (~6/9/25). The print file is saved as `Assembly2_ver3.stl` in the `3D/` directory, and the final product will look like the contents of `Prototype_Assembly.stl`. Find the Onshape document [here](https://cad.onshape.com/documents/6fe5cb060711fa738a919116/w/fa28f828e5c3d9cb04d2cd20/e/b66991c36ce5bdb22e432e13?renderMode=0&uiState=683d6334979e864c1bc73d1c). 
+I've sent the `.stl` files to be printed by [Robu.in's 3D printing service](https://robu.in/product/3d-printing-service/), which I will receive within a week's time (~6/9/25). The print file is saved as `Assembly2_ver3.stl` in the `3D/` directory, and the final product will look like the contents of `Prototype_Assembly.stl`. Find the Onshape document [here](https://cad.onshape.com/documents/6fe5cb060711fa738a919116/w/fa28f828e5c3d9cb04d2cd20/e/b66991c36ce5bdb22e432e13?renderMode=0&uiState=683d6334979e864c1bc73d1c) (you will need to sign in to view it). 
 
 
 **Updates**
+
 6/4/25: The print has been delayed, but I will move on to testing components and creating libraries to make the final product easier to construct.
 
 6/9/25: The print was cancelled and refunded because I provided parts that were too large for the printer. The latest print file is stored in `Assembly2_ver4.stl`, in which I've reduced the height of the card slots and increased the size of the cam lift range instead. The prints will hopefully come in by next week (6/16 to 6/20).
@@ -200,6 +201,83 @@ I had a ton of issues debugging the keypad, especially with adding constraints t
 
 ### SSD1306 Update (7/13)
 
-Since UART will not be visible to a user during the use of the system (it's not possible to connect the Arduino to a computer through USB while simultaneously powering it via the LM2596S), I'm including a SSD1306 that will display useful information to a user, such as error codes.
+Since UART will not be visible to a user during the use of the system (it's not possible to connect the Arduino to a computer through USB while simultaneously powering it via the LM2596S buck converter), I'm including a SSD1306 that will display useful information to a user, such as error codes and input so far.
+
+
+### Refinement (7/14)
+
+I've completed just about everything that is necessary for full, uninterrupted operation of the system. However, I'm running into a lot of accuracy issues regarding the rotation amount of the stepper per slot. I modified the  `stepper_move_to_pos()` function to calculate the *exact* amount needed for an accurate rotation, but it seems the calculation is either incorrect or the drv8825 library is faulty. I've checked the library and even replaced the `_delay_us(pulse_width_us)` with a Timer4 delay, but this only made the drum rotate faster with arguably no improvement to accuracy whatsoever. 
+
+I'm securing the drum more tightly on the shaft of the stepper, just in case the drum gets dislodged at every rotation, since I've noticed that the drum is unreasonably easy to rotate independently from the shaft even when the stepper is activated. For context, when the stepper is activated, it has a 'holding torque' that keeps it from moving out of its current step. If this is not the problem, it is probably a mechanical inaccuracy which I will need to use software to override, probably by adding additional steps to each rotation amount.
+
+Update (7/16): I have made the stepper as accurate as possible considering its mechanical inaccuracies. However, for more reliable operation, I have the main method put the stepper to sleep when not moving both to conserve power and to enable a user to slightly shift the drum back into a good position before running a new test case, as putting the stepper to sleep turns off its holding torque until re-enabled.
+---
+
+
+## Final Pin Arrangement Reference
+
+### Arduino Mega (out)
+
+Servo A Data: PB5 (Digital pin D11)
+
+Servo B Data: PB6 (Digital pin D12)
+
+Servo C Data: PE4 (Digital pin D2)
+
+Servo D Data: PE3 (Digital pin D6)
+
+
+DRV8825 DIR->EN: PORTK/PK0->PK7 (Digital pins Dx to Dy)
+
+Keypad: 
+
+OLED: 
+
+
+### Arduino Mega (in)
+
+LM2596S Buck Converter 5V OUT: 5V pin (via V+ rail)
+
+GND from 12V female jack: GND pin (via GND rail)
+
+
+### DRV8825 (out)
+
+1A, 2A, 1B, 2B: NEMA 17 stepper motor
+
+
+### DRV8825 (in)
+
+VMOT: V+ from 12V female jack
+GND: GND from 12V female jack
+
+**Note**: a capacitor is soldered across the above connections to avoid voltage spikes when the system is powered on.
+
+Logic GND: GND rail
+
+
+
+
+### Servos (in)
+
+VCC (red wire): V+ rail
+GND (brown wire): GND rail
+
+
+
+
 
 ---
+
+
+## References
+
+1. [Sparkfun 4x4 Membrane Keypad Reference Manual](https://cdn.sparkfun.com/assets/f/f/a/5/0/DS-16038.pdf)
+
+2. [Tower Pro 9g Micro Servo Datasheet](https://www.friendlywire.com/projects/ne555-servo-safe/SG90-datasheet.pdf)
+
+3. [Arduino Mega Rev3 Pinout](https://devboards.info/boards/arduino-mega2560-rev3)
+
+4. [DRV8825 Tutorial](https://lastminuteengineers.com/drv8825-stepper-motor-driver-arduino-tutorial/)
+
+5. Notes from UMass Amherst ECE231, taught in the spring semester of 2025
