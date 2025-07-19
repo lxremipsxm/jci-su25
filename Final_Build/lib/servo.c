@@ -31,14 +31,14 @@ void servo_start_pwm(){ //Sets up pwm servo control
     OCR1A = 1000; //set servo to 0 degrees initially (5% duty cycle)
     //Mega
     OCR1B = 1000;
-    OCR1C = 1000;
+    
 
     //Overall, this produces a pwm where the output goes HIGH at 0, goes low at 1000, and resets at 39999, to give us a 50Hz square wave 
     //with 5% duty cycle
 
     //For the 2560, I will enable Timer3 as well in the same mode as Timer1
-    DDRE |= 0x08; //set PE3 output: 0b 0000 1000
-    TCCR3A |= (1<<COM3A1); //non inverting mode (see timer1 setup above for explanation)
+    DDRE |= 0x18; //set PE3,4 output: 0b 0001 1000
+    TCCR3A |= (1<<COM3A1) | (1<<COM3B1); //non inverting mode (see timer1 setup above for explanation)
     TCCR3B |= (1<<WGM33) | (1<<WGM32);
     TCCR3A |= (1<<WGM31);
 
@@ -46,6 +46,7 @@ void servo_start_pwm(){ //Sets up pwm servo control
 
     ICR3 = 39999;
     OCR3A = 1000; //set servo to 0 degrees (5% duty cycle)
+    OCR3B = 1000;   
 }
 
 void servo_set_pos(char servo, int deg){ 
@@ -80,7 +81,7 @@ void servo_set_pos(char servo, int deg){
             break;
 
         case 3: 
-            OCR1C = pwidth*2;
+            OCR3B = pwidth*2;
             break;
 
         case 4:

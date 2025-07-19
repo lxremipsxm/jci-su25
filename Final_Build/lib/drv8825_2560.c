@@ -148,15 +148,16 @@ void drv8825_move_steps(uint16_t steps, drv8825_dir_t dir)
 		drv_data.drv.pin_set(DRV8825_DRV_DIR_PIN, true);
 		
 	_delay_us(10);
-    uint32_t pulse_time_us = (60.0*1000000L/drv_data.scr.steps_per_revolution/drv_data.scr.microsteps/drv_data.scr.rpm);
 
-    for (uint16_t i = 0; i < steps; i++)
+    uint32_t pulse_time_us = (60UL * 1000000UL) / (drv_data.scr.steps_per_revolution * drv_data.scr.microsteps * drv_data.scr.rpm);
+
+    for (uint16_t i = 0; i < steps; i++)	
     {
         drv_data.drv.pin_set(DRV8825_DRV_STEP_PIN, true);
-    	timer4_delay_us(pulse_time_us);
-    	drv_data.drv.pin_set(DRV8825_DRV_STEP_PIN, false);
-    	timer4_delay_us(pulse_time_us);
-    }
+        _delay_us(pulse_time_us);  // STEP pulse width
+        drv_data.drv.pin_set(DRV8825_DRV_STEP_PIN, false);
+		_delay_us(pulse_time_us);
+	}
 }
 
 void drv8825_move_revs(uint16_t revs, drv8825_dir_t dir)

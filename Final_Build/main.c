@@ -25,6 +25,15 @@ Comments
 #include "lib/SSD1306.h"
 
 
+//-----Servo Declarations-----//
+void servo_raise(char servo){
+    servo_set_pos(servo,50);
+    _delay_ms(400);
+    servo_set_pos(servo,0);
+    _delay_ms(100);
+
+}
+
 //-----Stepper Declarations-----//
 static void stepper_pin_set(drv8825_drv_pins_t pin, bool state)
 {
@@ -67,94 +76,78 @@ drv8825_scr_t scr =
     .rpm = 200,
 };
 
-void stepper_move_to_pos(int new_pos, int *current_pos){
 
+
+void stepper_move_to_pos(int new_pos, int *current_pos)
+{   
+    drv8825_set_slp_pin(true);
+    if (new_pos > 16) new_pos = 16;
+    if (new_pos < 1)  new_pos = 1;
+
+    int diff = new_pos - *current_pos;
     
-    if (new_pos > 16) //hard cap between 1 and 16 (inclusive)
-        new_pos = 16;
-
-    if (new_pos < 1)
-        new_pos = 1;
-
-    signed int diff = new_pos - *current_pos; //difference in position
-    int movement;
+    if (diff > 8)     
+        diff -= 16;
+    
+    else if (diff < -8) 
+        diff += 16;
 
     uint16_t steps_per_rev = drv8825_get_steps_per_revolution() * drv8825_get_microsteps();
-    uint16_t steps_per_slot = steps_per_rev / 16;
+    uint32_t ideal_steps_per_slot = (steps_per_rev * 100UL) / 16UL;  // x100 for fixed-point
+    uint32_t movement_steps = (ideal_steps_per_slot * abs(diff)) / 100;
 
-    //if difference greater than 8, swap difference around for shorter path
-    if (diff > 8){
-        diff = diff-16;
-    }
-
-    else if (diff < -8){
-        diff = 16+diff;
-    }
-
-
-    if (diff > 0){
-
-        movement = steps_per_slot*diff + 3*diff; 
-        drv8825_move_steps(movement, DRV8825_DIR_FORWARD);
-        
-    } 
-
-    else if (diff < 0){
-
-        movement = (steps_per_slot*-diff + 3*diff);
-        drv8825_move_steps(movement, DRV8825_DIR_BACKWARD);
-        
-    }
+    if (diff > 0)
+        drv8825_move_steps(movement_steps, DRV8825_DIR_FORWARD);
+    else if (diff < 0)
+        drv8825_move_steps(movement_steps, DRV8825_DIR_BACKWARD);
 
     *current_pos = new_pos;
-
 }
 
 
-void stepper_move_card_to_reader(int card, char reader, int *current_pos){
+void read_card(int card, char reader, int *current_pos){
 
     //All this does is use the position at reader A to determine the positions of the other three readers,
     //since they have a constant difference of 4 slots between each. I'll create a wrap-around functionality
     //to easily work with the 1-16 cap I have set in stepper_move_to_pos().
-    int new_pos;
+    int new_pos=1;
+    char move_servo = 1;
 
     switch (reader){
         case 'A':
             new_pos = card;
+            move_servo=1;
             break;
 
         case 'B':
             new_pos = card-4;
+            move_servo=2;
             break;
 
         case 'C':
             new_pos = card-8;
+            move_servo=3;
             break;
 
         case 'D':
             new_pos = card-12;
+            move_servo=4;
             break;
     }
 
 
-        if (new_pos < 0){
+        if (new_pos <= 0){
             new_pos += 16;    
         }
 
         stepper_move_to_pos(new_pos, current_pos);
-    
+        _delay_ms(100);
+        servo_raise(move_servo);
 }
 
 
 
-//-----Servo Declarations-----//
-void servo_raise(int servo){
-    servo_set_pos(servo,50);
-    _delay_ms(400);
-    servo_set_pos(servo,0);
-    _delay_ms(100);
 
-}
 
 //-----Keypad declarations-----//
 const char keymap[4][4] = {
@@ -211,7 +204,7 @@ char keypad_char() {
 
 
 void keypad_string(char *stringAddress){
-    OLED_GoToLine(1);
+    OLED_GoToLine(3);
     OLED_DisplayString("Input: ");
 
     char response;
@@ -226,14 +219,21 @@ void keypad_string(char *stringAddress){
             break;
         }
 
+        if (response == '#') {
+            if (len > 0) {
+                len--;
+                stringAddress[len] = '\0'; // Remove last character
+            }
+        }
 
-        if (len < 5){
+        else if (len < 5){
             stringAddress[len++] = response; //concatenate with previous numbers entered
             stringAddress[len] = '\0'; //add null terminator
             
         }
-        
-        OLED_GoToLine(2);
+
+        OLED_DisplayString("     ");
+        OLED_GoToLine(4);
         OLED_DisplayString(stringAddress);
 
         _delay_ms(350);
@@ -241,7 +241,7 @@ void keypad_string(char *stringAddress){
 }
 
 //-----SSD1306-----//
-const uint8_t logo[1024] = {
+const char logo[1024] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
@@ -316,7 +316,7 @@ int main(void)
     //Setup
     OLED_Init();
     OLED_GoToLine(4);
-    OLED_DisplayLogo(&logo);
+    OLED_DisplayLogo(logo);
     uart_init();
     drv8825_init(&drv, scr);
     servo_start_pwm();
@@ -326,8 +326,8 @@ int main(void)
     //Stepper Settings
     drv8825_set_rpm(50);
     drv8825_set_steps_per_revolution(200);
-    drv8825_set_microsteps(32);
-    drv8825_set_microsteps_pin(32);
+    drv8825_set_microsteps(4);
+    drv8825_set_microsteps_pin(4);
     int current_pos = 1; // current card at reader A
 
     char code[4];
@@ -339,20 +339,78 @@ int main(void)
 
         OLED_Clear(); //Clear display
 
+        drv8825_set_slp_pin(false);
+
+        OLED_GoToLine(1);
+        char current[32];
+        sprintf(current, "Card at A:%d", current_pos);
+        OLED_DisplayString(current);
+
         code[0] = '\0'; //clear string  
         
         keypad_string(code);
         int len = strlen(code);
 
-        if (len == 2){
-                char temp[4];
-                temp[0] = '0';
-                temp[1] = '\0'; 
-                strcat(temp, code);
 
-                strcpy(code, temp);
-                len += 1;
+
+
+        if ((strcmp(code, "AAA") == 0) || (strcmp(code, "BBB") == 0) || (strcmp(code, "CCC") == 0) || (strcmp(code, "DDD") == 0)){
+
+            char r = 'X';
+
+            if (strcmp(code, "AAA") == 0){
+                r = 'A';
+
+            }
+
+            else if (strcmp(code, "BBB") == 0){
+                r = 'B';
+            }
+
+            else if (strcmp(code, "CCC") == 0){
+                r = 'C';
+            }
+
+            else if (strcmp(code, "DDD") == 0){
+                r = 'D';
+            }
+            
+            else {
+                //Do nothing
+            }
+
+            OLED_GoToLine(3);
+            OLED_DisplayString("All cards to ");
+
+            char readermsg[20];
+            sprintf(readermsg, "Reader %c", code[0]);
+            OLED_GoToLine(5);
+            OLED_DisplayString(readermsg);
+
+            int i;
+            for (i=1; i<=16; i++){
+
+                read_card(i, r, &current_pos);
+
+                if (i%3 == 0){
+                    drv8825_move_steps(4, DRV8825_DIR_FORWARD);
+
+                }
+            }
+            
+            continue;
+
         }
+
+        if (len == 2){
+            char temp[4];
+            temp[0] = '0';
+            temp[1] = '\0'; 
+            strcat(temp, code);
+            strcpy(code, temp);
+            len += 1;
+        }
+
 
         if (len > 3){
             uart_send_string("Invalid input. Input longer than three characters. \r\n");
@@ -390,7 +448,7 @@ int main(void)
                 OLED_DisplayString("Card value out of");
                 OLED_GoToLine(5);
                 OLED_DisplayString("bounds 1-16.");
-                _delay_ms(1000);
+                _delay_ms(700);
                 continue; 
             }
 
@@ -403,40 +461,25 @@ int main(void)
 
             char reader = code[2];
 
-            stepper_move_card_to_reader(card_int, reader, &current_pos);
-
             char msg[32];
             sprintf(msg, "Card %d to reader %c", card_int, reader);
+
             OLED_GoToLine(4);
             OLED_DisplayString(msg); 
+            read_card(card_int, reader, &current_pos);
+
+            
+            
 
             /*debug message 2
             char debug_msg2[32];
             sprintf(debug_msg2, "current pos after = %d\r\n", current_pos);
             uart_send_string(debug_msg2);*/
         
-            _delay_ms(200);
-
-           /* switch (reader){
-
-                case 'A': 
-                    servo_raise(1);
-                    break;
-
-                case 'B':
-                    servo_raise(2);
-                    break;
-                case 'C':
-                    servo_raise(3);
-                    break;
-                case 'D':
-                    servo_raise(4);
-
-            }*/
 
         }
 
-        _delay_ms(1000);
+        _delay_ms(500);
        
 
     }
