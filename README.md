@@ -214,6 +214,10 @@ Update (7/16): I have made the stepper as accurate as possible considering its m
 
 ---
 
+## Final Build
+
+![Final Build Appearance](img/final_build.jpg)
+
 
 ## Final Pin Arrangement Reference
 
@@ -228,11 +232,15 @@ Servo C Data: PE4 (Digital pin D2)
 Servo D Data: PE3 (Digital pin D6)
 
 
-DRV8825 DIR->EN: PORTK/PK0->PK7 (Digital pins Dx to Dy)
+DRV8825 DIR->EN: PORTK/PK0->PK7 (Analog pins A0 to A7)
 
-Keypad: 
+Keypad: PORTA/PA1,3,5,7,6,4,2,0 (Digital pins D23, 25, 27, 29, 28, 26, 24, 22)
 
-OLED: 
+OLED Power: GND, 3.3V pin
+
+OLED SCL: PD0 (Digital pin D21)
+
+OLED SDA: PD1 (Digital pin D20)
 
 
 ### Arduino Mega (in)
@@ -250,6 +258,7 @@ GND from 12V female jack: GND pin (via GND rail)
 ### DRV8825 (in)
 
 VMOT: V+ from 12V female jack
+
 GND: GND from 12V female jack
 
 **Note**: a capacitor is soldered across the above connections to avoid voltage spikes when the system is powered on.
@@ -262,10 +271,29 @@ Logic GND: GND rail
 ### Servos (in)
 
 VCC (red wire): V+ rail
+
 GND (brown wire): GND rail
 
 
 
+### LM2596S Buck Converter (in)
+
+IN: 12V from 12V female jack
+
+GND: GND from 12V female jack
+
+---
+
+
+## Instructions for Use
+
+1. Input the card number to be read followed immediately by the reader name, then press "*" to confirm the selection. The format should be "nnX", where nn is a number between 1 and 16, and X is any letter on the keypad(A-D).
+
+2. Input the reader name thrice (format XXX) to have all 16 cards read at the selected reader. "*" to confirm the selection. 
+
+3. In the case a user enters something in the wrong format, the OLED will return a message indicating what was wrong with the input.
+
+4. "#" is a backspace key.
 
 
 ---
